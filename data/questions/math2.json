@@ -1,0 +1,8 @@
+[
+  {"id":"math2_001","unit":"微分法","topic":"導関数","difficulty":"基礎","question":"f(x)=x³−3x²+2x の導関数 f′(x) を求めよ。","hint":"xⁿ の導関数は nxⁿ⁻¹。","answer":"3x²−6x+2","explanation":"各項を微分して 3x²−6x+2。"},
+  {"id":"math2_002","unit":"微分法","topic":"接線","difficulty":"基礎","question":"放物線 y=x² 上の点 (1, 1) における接線の方程式を求めよ。","hint":"y′=2x に x=1 を代入して傾きを求める。","answer":"y=2x−1","explanation":"傾きは 2·1=2。y−1=2(x−1) より y=2x−1。"},
+  {"id":"math2_003","unit":"微分法","topic":"接線","difficulty":"標準","question":"曲線 y=x³−3x 上の x=2 の点における接線の方程式を求めよ。","hint":"接点の y座標と、x=2 での微分係数を求める。","answer":"y=9x−16","explanation":"f′(x)=3x²−3 より f′(2)=9。f(2)=8−6=2。y−2=9(x−2) より y=9x−16。"},
+  {"id":"math2_004","unit":"微分法","topic":"増減と極値","difficulty":"標準","question":"f(x)=x³−3x の極値を求めよ。","hint":"f′(x)=0 となる x の前後で符号を調べる。","answer":"x=−1 で極大値2、x=1 で極小値−2","explanation":"f′(x)=3(x+1)(x−1)。x<−1 で正、−1<x<1 で負、x>1 で正。f(−1)=2、f(1)=−2。"},
+  {"id":"math2_005","unit":"微分法","topic":"増減と極値","difficulty":"応用","question":"f(x)=x³−3x²−9x+1 の −2≤x≤4 における最大値と最小値を求めよ。","hint":"極値の候補と両端の値をすべて比べる。","answer":"最大値6 (x=−1)、最小値−26 (x=3)","explanation":"f′(x)=3(x−3)(x+1)。f(−2)=−1、f(−1)=6、f(3)=−26、f(4)=−19。これらを比べて最大6、最小−26。"},
+  {"id":"math2_006","unit":"微分法","topic":"増減と極値","difficulty":"応用","question":"x についての方程式 x³−3x=k が異なる3つの実数解をもつような定数 k の範囲を求めよ。","hint":"y=x³−3x のグラフと直線 y=k の共有点の個数を考える。","answer":"−2<k<2","explanation":"y=x³−3x は x=−1 で極大値2、x=1 で極小値−2。直線 y=k が3点で交わるのは極小値と極大値の間のときなので −2<k<2。"}
+]

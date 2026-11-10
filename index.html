@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>高校数学 復習問題</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <h1>高校数学 復習問題</h1>
+
+  <section id="setup" aria-labelledby="setup-title">
+    <h2 id="setup-title">出題条件</h2>
+    <form id="condition-form">
+      <label>単元
+        <select id="unit-select" required disabled></select>
+      </label>
+      <label>詳細内容
+        <select id="topic-select" disabled></select>
+      </label>
+      <label>難易度
+        <select id="difficulty-select" required disabled></select>
+      </label>
+      <button type="submit" id="fetch-btn" disabled>問題を取得</button>
+    </form>
+  </section>
+
+  <div id="message" role="status" hidden></div>
+
+  <section id="practice" aria-labelledby="practice-title" hidden>
+    <h2 id="practice-title">問題</h2>
+    <ol id="question-list"></ol>
+  </section>
+</main>
+<script src="script.js"></script>
+</body>
+</html>

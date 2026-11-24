@@ -2,34 +2,39 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#eef2f9">
 <title>高校数学 復習問題</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <main>
-  <h1>高校数学 復習問題</h1>
+  <header class="site-head">
+    <h1>数学の復習</h1>
+    <p class="lead">単元と難易度を選んで、最大5問を解いてみよう。</p>
+  </header>
 
-  <section id="setup" aria-labelledby="setup-title">
-    <h2 id="setup-title">出題条件</h2>
+  <section id="setup" class="card" aria-label="出題条件">
     <form id="condition-form">
-      <label>単元
-        <select id="unit-select" required disabled></select>
-      </label>
-      <label>詳細内容
-        <select id="topic-select" disabled></select>
-      </label>
-      <label>難易度
-        <select id="difficulty-select" required disabled></select>
-      </label>
+      <fieldset class="field">
+        <legend>単元</legend>
+        <div id="unit-group" class="chips" role="radiogroup" aria-label="単元"></div>
+      </fieldset>
+      <fieldset class="field" id="topic-field" hidden>
+        <legend>詳細内容</legend>
+        <div id="topic-group" class="chips" role="radiogroup" aria-label="詳細内容"></div>
+      </fieldset>
+      <fieldset class="field">
+        <legend>難易度</legend>
+        <div id="difficulty-group" class="segmented" role="radiogroup" aria-label="難易度"></div>
+      </fieldset>
       <button type="submit" id="fetch-btn" disabled>問題を取得</button>
     </form>
   </section>
 
   <div id="message" role="status" hidden></div>
 
-  <section id="practice" aria-labelledby="practice-title" hidden>
-    <h2 id="practice-title">問題</h2>
+  <section id="practice" aria-label="問題" hidden>
     <ol id="question-list"></ol>
   </section>
 </main>

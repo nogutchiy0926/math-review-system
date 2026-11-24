@@ -8,8 +8,8 @@
 
   const $ = (id) => document.getElementById(id);
   const els = {
-    form: $("condition-form"), unit: $("unit-select"), topic: $("topic-select"),
-    difficulty: $("difficulty-select"), fetchBtn: $("fetch-btn"),
+    form: $("condition-form"), unitGroup: $("unit-group"), topicField: $("topic-field"),
+    topicGroup: $("topic-group"), difficultyGroup: $("difficulty-group"), fetchBtn: $("fetch-btn"),
     message: $("message"), practice: $("practice"), list: $("question-list"),
   };
 
@@ -24,21 +24,27 @@
 
   const unique = (arr) => [...new Set(arr)];
 
-  function fillSelect(select, values, placeholder) {
-    select.replaceChildren();
-    if (placeholder !== undefined) {
-      const o = document.createElement("option");
-      o.value = "";
-      o.textContent = placeholder;
-      select.append(o);
-    }
-    for (const v of values) {
-      const o = document.createElement("option");
-      o.value = v;
-      o.textContent = v;
-      select.append(o);
-    }
+  // ラジオボタンの選択肢を作る（allLabel があれば先頭に「すべて」を置き選択済みにする）
+  function renderGroup(container, name, values, allLabel) {
+    container.replaceChildren();
+    const items = allLabel ? [["", allLabel], ...values.map((v) => [v, v])] : values.map((v) => [v, v]);
+    items.forEach(([value, text], i) => {
+      const label = document.createElement("label");
+      label.className = "opt";
+      const input = document.createElement("input");
+      input.type = "radio"; input.name = name; input.value = value;
+      input.checked = !!allLabel && i === 0;
+      const span = document.createElement("span");
+      span.textContent = text;
+      label.append(input, span);
+      container.append(label);
+    });
   }
+
+  const selected = (name) => {
+    const c = els.form.querySelector(`input[name="${name}"]:checked`);
+    return c ? c.value : null;
+  };
 
   // ---------- データ読み込み ----------
   async function fetchJson(url) {
@@ -83,17 +89,23 @@
 
   // ---------- 選択肢の生成 ----------
   function initControls() {
-    fillSelect(els.unit, unique(questions.map((q) => q.unit)), "単元を選択");
-    fillSelect(els.difficulty, unique(questions.map((q) => q.difficulty)), "難易度を選択");
-    fillSelect(els.topic, [], "すべて");
-    for (const el of [els.unit, els.difficulty, els.fetchBtn]) el.disabled = false;
+    renderGroup(els.unitGroup, "unit", unique(questions.map((q) => q.unit)), "すべて");
+    renderGroup(els.difficultyGroup, "difficulty", unique(questions.map((q) => q.difficulty)), "すべて");
+    els.fetchBtn.disabled = false;
   }
 
-  els.unit.addEventListener("change", () => {
-    const unit = els.unit.value;
-    const topics = unique(questions.filter((q) => q.unit === unit).map((q) => q.topic));
-    fillSelect(els.topic, topics, "すべて");
-    els.topic.disabled = topics.length === 0;
+  els.form.addEventListener("change", (e) => {
+    if (e.target.name === "unit") {
+      const unit = e.target.value;
+      if (unit === "") {
+        els.topicGroup.replaceChildren();
+        els.topicField.hidden = true; // 単元が「すべて」のときは詳細内容を出さない
+      } else {
+        const topics = unique(questions.filter((q) => q.unit === unit).map((q) => q.topic));
+        renderGroup(els.topicGroup, "topic", topics, "すべて");
+        els.topicField.hidden = false;
+      }
+    }
   });
 
   // ---------- 出題 ----------
@@ -108,11 +120,10 @@
 
   els.form.addEventListener("submit", (e) => {
     e.preventDefault();
-    const { value: unit } = els.unit, { value: topic } = els.topic, { value: difficulty } = els.difficulty;
-    if (!unit || !difficulty) { showMessage("単元と難易度を選択してください。", true); return; }
+    const unit = selected("unit"), topic = selected("topic") || "", difficulty = selected("difficulty");
 
     const pool = questions.filter((q) =>
-      q.unit === unit && q.difficulty === difficulty && (!topic || q.topic === topic));
+      (!unit || q.unit === unit) && (!difficulty || q.difficulty === difficulty) && (!topic || q.topic === topic));
     els.list.replaceChildren();
 
     if (pool.length === 0) {
@@ -135,7 +146,13 @@
 
   function renderQuestion(q, no) {
     const li = el("li", "question");
-    li.append(el("p", "q-head", `問${no}`), el("p", "q-text", q.question));
+    const top = el("div", "q-top");
+    const num = el("span", "q-num", String(no));
+    num.setAttribute("aria-label", `問${no}`);
+    const tags = el("ul", "tags");
+    for (const t of [q.unit, q.topic, q.difficulty]) tags.append(el("li", "", t));
+    top.append(num, tags);
+    li.append(top, el("p", "q-text", q.question));
 
     const actions = el("div", "actions");
     const hintBox = el("div", "hint-box");
@@ -144,21 +161,22 @@
     answerBox.hidden = true;
 
     if (typeof q.hint === "string" && q.hint.trim() !== "") {
-      hintBox.append(el("p", "hint-text", q.hint));
+      hintBox.append(el("span", "label", "ヒント"), el("p", "hint-text", q.hint));
       const hintBtn = el("button", "", "ヒントを見る");
       hintBtn.type = "button";
       hintBtn.setAttribute("aria-expanded", "false");
       hintBtn.addEventListener("click", () => {
-        hintBox.hidden = false; // 表示後は閉じない
+        hintBox.hidden = false;
         hintBtn.disabled = true;
+        hintBtn.textContent = "ヒントを表示中";
         hintBtn.setAttribute("aria-expanded", "true");
       });
       actions.append(hintBtn);
     }
 
-    const dt1 = el("dt", "", "解答"), dd1 = el("dd", "answer-text", q.answer);
-    const dt2 = el("dt", "", "解説"), dd2 = el("dd", "explanation-text", q.explanation);
-    answerBox.append(dt1, dd1, dt2, dd2);
+    answerBox.append(
+      el("dt", "", "解答"), el("dd", "answer-text", q.answer),
+      el("dt", "", "解説"), el("dd", "explanation-text", q.explanation));
 
     const ansBtn = el("button", "", "解答・解説を見る");
     ansBtn.type = "button";

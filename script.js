@@ -8,8 +8,8 @@
 
   const $ = (id) => document.getElementById(id);
   const els = {
-    form: $("condition-form"), unitGroup: $("unit-group"), topicField: $("topic-field"),
-    topicGroup: $("topic-group"), difficultyGroup: $("difficulty-group"), fetchBtn: $("fetch-btn"),
+    form: $("condition-form"), unit: $("unit-select"), topic: $("topic-select"),
+    difficulty: $("difficulty-select"), fetchBtn: $("fetch-btn"),
     message: $("message"), practice: $("practice"), list: $("question-list"),
   };
 
@@ -24,27 +24,15 @@
 
   const unique = (arr) => [...new Set(arr)];
 
-  // ラジオボタンの選択肢を作る（allLabel があれば先頭に「すべて」を置き選択済みにする）
-  function renderGroup(container, name, values, allLabel) {
-    container.replaceChildren();
-    const items = allLabel ? [["", allLabel], ...values.map((v) => [v, v])] : values.map((v) => [v, v]);
-    items.forEach(([value, text], i) => {
-      const label = document.createElement("label");
-      label.className = "opt";
-      const input = document.createElement("input");
-      input.type = "radio"; input.name = name; input.value = value;
-      input.checked = !!allLabel && i === 0;
-      const span = document.createElement("span");
-      span.textContent = text;
-      label.append(input, span);
-      container.append(label);
-    });
+  function fillSelect(select, values) {
+    select.replaceChildren();
+    for (const [value, text] of [["", "すべて"], ...values.map((v) => [v, v])]) {
+      const o = document.createElement("option");
+      o.value = value;
+      o.textContent = text;
+      select.append(o);
+    }
   }
-
-  const selected = (name) => {
-    const c = els.form.querySelector(`input[name="${name}"]:checked`);
-    return c ? c.value : null;
-  };
 
   // ---------- データ読み込み ----------
   async function fetchJson(url) {
@@ -89,23 +77,19 @@
 
   // ---------- 選択肢の生成 ----------
   function initControls() {
-    renderGroup(els.unitGroup, "unit", unique(questions.map((q) => q.unit)), "すべて");
-    renderGroup(els.difficultyGroup, "difficulty", unique(questions.map((q) => q.difficulty)), "すべて");
+    fillSelect(els.unit, unique(questions.map((q) => q.unit)));
+    fillSelect(els.difficulty, unique(questions.map((q) => q.difficulty)));
+    fillSelect(els.topic, []);
+    els.unit.disabled = false;
+    els.difficulty.disabled = false;
     els.fetchBtn.disabled = false;
   }
 
-  els.form.addEventListener("change", (e) => {
-    if (e.target.name === "unit") {
-      const unit = e.target.value;
-      if (unit === "") {
-        els.topicGroup.replaceChildren();
-        els.topicField.hidden = true; // 単元が「すべて」のときは詳細内容を出さない
-      } else {
-        const topics = unique(questions.filter((q) => q.unit === unit).map((q) => q.topic));
-        renderGroup(els.topicGroup, "topic", topics, "すべて");
-        els.topicField.hidden = false;
-      }
-    }
+  els.unit.addEventListener("change", () => {
+    const unit = els.unit.value;
+    const topics = unit ? unique(questions.filter((q) => q.unit === unit).map((q) => q.topic)) : [];
+    fillSelect(els.topic, topics);
+    els.topic.disabled = !unit; // 単元が「すべて」のときは選べない
   });
 
   // ---------- 出題 ----------
@@ -120,7 +104,7 @@
 
   els.form.addEventListener("submit", (e) => {
     e.preventDefault();
-    const unit = selected("unit"), topic = selected("topic") || "", difficulty = selected("difficulty");
+    const unit = els.unit.value, topic = els.topic.value, difficulty = els.difficulty.value;
 
     const pool = questions.filter((q) =>
       (!unit || q.unit === unit) && (!difficulty || q.difficulty === difficulty) && (!topic || q.topic === topic));
@@ -131,7 +115,7 @@
       showMessage("この条件に合う問題はありません。条件を変えてください。", true);
       return;
     }
-    showMessage(pool.length < MAX_QUESTIONS ? `該当する${pool.length}問をすべて表示しています。` : "", false);
+    showMessage("", false);
     sample(pool, MAX_QUESTIONS).forEach((q, i) => els.list.append(renderQuestion(q, i + 1)));
     els.practice.hidden = false;
     els.practice.scrollIntoView({ behavior: "smooth", block: "start" });
